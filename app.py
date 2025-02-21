@@ -26,25 +26,21 @@ def get_tenant_access_token():
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.json
-    print("📩 Received event:", json.dumps(data, indent=2))
+    print("📩 Received event:", json.dumps(data, indent=2))  # Log semua event yang diterima
 
-    # Cek apakah ini challenge dari Lark
+    # Jika ini request verifikasi
     if "challenge" in data:
         return jsonify({"challenge": data["challenge"]})
 
-    # Cek apakah ini pesan dari pengguna
+    # Jika event pesan masuk
     if data.get("event", {}).get("type") == "im.message.receive_v1":
-        chat_id = data["event"]["message"]["chat_id"]
-        message_content = json.loads(data["event"]["message"]["content"])
-        message_text = message_content.get("text", "")
+        event = data["event"]
+        message_content = event["message"]["content"]
+        chat_id = event["message"]["chat_id"]
 
-        print(f"📨 User message: {message_text}")
+        print(f"📨 Received message: {message_content}")  # Log pesan yang diterima
 
-        # Kirim pertanyaan ke OpenAI
-        ai_response = get_openai_response(message_text)
-
-        # Kirim pesan balik ke Lark
-        send_message(chat_id, ai_response)
+        send_message(chat_id, "👋 Halo! Saya bot Lark.")
 
     return jsonify({"msg": "ok"})
 
